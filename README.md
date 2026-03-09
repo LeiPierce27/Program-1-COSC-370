@@ -131,40 +131,40 @@ java ICMPPinger 127.0.0.1
 ---
 
 ### Commands Used
-<img width="767" height="130" alt="Commands overview" src="images/ContinentPinger.jpg" />
+<img width="767" height="200" alt="Commands overview" src="images/ContinentPinger.jpg" />
 
 ---
 
 ### Test 1 — Localhost (127.0.0.1) — Loopback Test
-<img width="772" height="396" alt="Localhost ping output" src="https://github.com/user-attachments/assets/5a4e888d-7769-4f5d-8cd7-f2be52f19cf7" />
+<img width="772" height="396" alt="Localhost ping output" src="images/LocalPing.jpg" />
 
 > RTT Min=1.00 ms  Avg=1.55 ms  Max=5.31 ms  StdDev=1.26 ms — 0% Packet Loss
 
 ---
 
 ### Test 2 — North America (8.8.8.8 — Google DNS, USA)
-<img width="777" height="392" alt="North America ping output" src="https://github.com/user-attachments/assets/61ec7c54-ed2a-471c-8dc7-73646918e36c" />
+<img width="777" height="392" alt="North America ping output" src="images/NAPing.jpg" />
 
 > RTT Min=11.51 ms  Avg=64.83 ms  Max=175.95 ms  StdDev=66.21 ms — 0% Packet Loss
 
 ---
 
 ### Test 3 — Asia (168.126.63.1 — KT DNS, South Korea)
-<img width="772" height="396" alt="Asia ping output" src="https://github.com/user-attachments/assets/35d9bc5f-2eb0-493c-ad5a-da010bd37ded" />
+<img width="772" height="396" alt="Asia ping output" src="images/AsiaPing.jpg" />
 
 > RTT Min=204.44 ms  Avg=250.97 ms  Max=374.83 ms  StdDev=56.33 ms — 0% Packet Loss
 
 ---
 
 ### Test 4 — South America (200.160.0.1 — NIC Brazil)
-<img width="770" height="392" alt="South America ping output" src="https://github.com/user-attachments/assets/48b549ac-dd6e-4032-9a02-8cb248484937" />
+<img width="770" height="392" alt="South America ping output" src="images/SouthAPing.jpg" />
 
 > RTT Min=139.44 ms  Avg=152.93 ms  Max=199.83 ms  StdDev=20.68 ms — 0% Packet Loss
 
 ---
 
 ### Test 5 — Europe (194.0.0.1 — RIPE NCC, Amsterdam) — Packet Loss Demo
-<img width="772" height="396" alt="Europe packet loss output" src="https://github.com/user-attachments/assets/5a4e888d-7769-4f5d-8cd7-f2be52f19cf7" />
+<img width="772" height="396" alt="Europe packet loss output" src="images/EUPing.jpg" />
 
 > 10 Lost (100% Packet Loss) — Demonstrates timeout detection. Host did not respond,
 > confirming the program correctly handles unreachable targets and reports full packet loss.
