@@ -183,12 +183,6 @@ This implementation parses ICMP error response codes and displays human-readable
 | 3         | 13   | Communication Administratively Prohibited |
 | 11        | 0    | Time Exceeded (TTL expired in transit)    |
 
-Example error output:
-```
-  seq=3    ICMP Error -> Destination Host Unreachable
-  seq=7    ICMP Error -> Time Exceeded (TTL expired, code=0)
-```
-
 ---
 
 ## Limitations
