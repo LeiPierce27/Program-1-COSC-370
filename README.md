@@ -188,6 +188,10 @@ Example error output:
 
 ---
 
+## Group Report
+
+- We would interact online about the program and work on it respectively
+
 ## References
 - Internet Control Message Protocol (RFC 792): https://datatracker.ietf.org/doc/html/rfc792
 - Computing the Internet Checksum (RFC 1071): https://datatracker.ietf.org/doc/html/rfc1071
