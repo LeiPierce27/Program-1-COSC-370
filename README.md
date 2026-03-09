@@ -129,20 +129,27 @@ java ICMPPinger 127.0.0.1
 
 ### Test 1 — Localhost (127.0.0.1)
 
-<img width="772" height="287" alt="Localhost ping output" src="https://github.com/user-attachments/assets/59cce8b3-c86c-48f7-8c3a-ecdd340dc951" />
+<img width="772" height="396" alt="image" src="https://github.com/user-attachments/assets/5a4e888d-7769-4f5d-8cd7-f2be52f19cf7" />
+
 
 ### Test 2 — 
 
-<img width="782" height="302" alt="External host ping output" src="https://github.com/user-attachments/assets/4fef6525-4e36-475d-a266-5efde4ab60d1" />
+<img width="777" height="392" alt="image" src="https://github.com/user-attachments/assets/61ec7c54-ed2a-471c-8dc7-73646918e36c" />
+
 
 ### Test 3 —
+
+<img width="767" height="392" alt="image" src="https://github.com/user-attachments/assets/913b759a-558e-49ae-b764-8dcd01f53a52" />
 
 
 ### Test 4 — 
 
+<img width="772" height="396" alt="image" src="https://github.com/user-attachments/assets/35d9bc5f-2eb0-493c-ad5a-da010bd37ded" />
+
 
 ### Test 5 —
 
+<img width="770" height="392" alt="image" src="https://github.com/user-attachments/assets/48b549ac-dd6e-4032-9a02-8cb248484937" />
 
 ---
 
