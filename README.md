@@ -130,6 +130,11 @@ java ICMPPinger 127.0.0.1
 
 ---
 
+### Commands Used
+<img width="767" height="130" alt="Commands overview" src="https://github.com/user-attachments/assets/913b759a-558e-49ae-b764-8dcd01f53a52" />
+
+---
+
 ### Test 1 — Localhost (127.0.0.1) — Loopback Test
 <img width="772" height="396" alt="Localhost ping output" src="https://github.com/user-attachments/assets/5a4e888d-7769-4f5d-8cd7-f2be52f19cf7" />
 
