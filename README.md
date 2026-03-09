@@ -78,7 +78,10 @@ Basic Usage:
 
 
 
-## Sample Output
+## Sample Outputs
+
+
+## Extra Credit
 
 
 
@@ -86,8 +89,14 @@ Basic Usage:
 
 - Raw socket access is blocked or restricted in some managed network enviornments (like univeresity firewalls). If pings to external hosts fail, try a different network.  
 - on Windows, raw ICMP sockets behave differently due to OS-level restrictions and may not produce consistent results.
-- The program sends one ping per second and waits up to 1 second for a reply before marking a packet as lost. 
+- The program sends one ping per second and waits up to 1 second for a reply before marking a packet as lost.
+- IPv4 Only.
 
 ---
 
 ## References
+
+- Internet Control Message Protocol: https://datatracker.ietf.org/doc/html/rfc792
+- Computing the Internet CheckSum: https://datatracker.ietf.org/doc/html/rfc1071
+- Java InetAddress API Documentation: https://docs.oracle.com/javase/8/docs/api/java/net/InetAddress.html
+- Java DatagramSocket API Documentation: https://docs.oracle.com/javase/8/docs/api/java/net/DatagramSocket.html
