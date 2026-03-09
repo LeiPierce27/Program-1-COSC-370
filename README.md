@@ -19,7 +19,7 @@
 This program implements a Ping Application in Java using ICMP (Internet Control Message Protocol) echo request and reply messages. The pinger sends ICMP echo requests to a target host once per second and listens for ICMP echo replies. It measures the Round-Trip Time (RTT) for each packet and reports:
 
 - Per-packet RTT (in milliseconds)
-- TTL (Time to Live) of each reply
+- TTL shown as `N/A` — Java's `DatagramSocket` does not expose the IP header, so TTL cannot be read
 - Packet Loss Detection (timeout after 1 second)
 - Summary Statistics: **Minimum, Maximum, and Average RTT**
 
@@ -33,7 +33,7 @@ This program implements a Ping Application in Java using ICMP (Internet Control 
 | macOS        | Yes       | Run with `sudo`. Raw sockets require root on macOS.                                               |
 | Win10/11     | Limited   | Raw socket support is restricted. Must run as Administrator. Results may vary by security policy. |
 
-> **Important:** This program uses raw sockets, which require **Administrator or Root privileges** on all platforms. Without elevated permissions, the program will throw a socket permission error and will not run.
+> **Important:** This program uses raw sockets, which require **Administrator or Root privileges** on all platforms. Without elevated permissions, the program automatically switches to fallback mode using `InetAddress.isReachable()`, which still measures RTT and packet loss but has reduced packet-level detail.
 
 ---
 
@@ -43,8 +43,10 @@ Before running the program, ensure the following are installed on your system:
 
 | Requirement       | Minimum Version | How to Check     |
 |-------------------|-----------------|------------------|
-| Java JDK          | JDK 8+          | `java -version`  |
-| javac (compiler)  | JDK 8+          | `javac -version` |
+| Java JDK          | **JDK 9+**      | `java -version`  |
+| javac (compiler)  | **JDK 9+**      | `javac -version` |
+
+> **Note:** JDK 9 or higher is required. The program uses `ProcessHandle.current().pid()` which was introduced in Java 9. JDK 8 will not compile this program.
 
 **To Install Java:**
 
@@ -125,13 +127,25 @@ java ICMPPinger 127.0.0.1
 
 ## Sample Output
 
-### Test 1 — Localhost (127.0.0.1)
+### Test 1 — Localhost (127.0.0.1) — North America
 
 <img width="772" height="287" alt="Localhost ping output" src="https://github.com/user-attachments/assets/59cce8b3-c86c-48f7-8c3a-ecdd340dc951" />
 
-### Test 2 — External Host
+### Test 2 — North America (e.g. 8.8.8.8 — Google DNS, USA)
 
 <img width="782" height="302" alt="External host ping output" src="https://github.com/user-attachments/assets/4fef6525-4e36-475d-a266-5efde4ab60d1" />
+
+### Test 3 — Europe (e.g. 1.1.1.1 — Cloudflare, EU PoP)
+
+<!-- Add screenshot here after running: sudo java ICMPPinger 1.1.1.1 -->
+
+### Test 4 — Asia (e.g. 210.2.4.8 — China Telecom)
+
+<!-- Add screenshot here after running: sudo java ICMPPinger 210.2.4.8 -->
+
+### Test 5 — Oceania / Africa (e.g. 203.0.178.191 — Australia)
+
+<!-- Add screenshot here after running: sudo java ICMPPinger 203.0.178.191 -->
 
 ---
 
@@ -161,10 +175,12 @@ Example error output:
 
 ## Limitations
 
+- Java's `DatagramSocket` does not expose the incoming IP header, so **TTL is not available** and is always shown as `N/A`. A native solution (JNI or a C helper) would be required to read TTL.
 - Raw socket access is blocked or restricted in some managed network environments (e.g., university firewalls). If pings to external hosts fail, try a different network.
 - On Windows, raw ICMP sockets behave differently due to OS-level restrictions and may not produce consistent results.
 - The program sends one ping per second and waits up to 1 second for a reply before marking a packet as lost.
-- IPv4 only — IPv6 is not supported.
+- IPv4 only — IPv6 (ICMPv6) is not supported.
+- Requires **JDK 9 or higher** — will not compile on JDK 8 due to use of `ProcessHandle`.
 
 ---
 
