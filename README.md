@@ -127,25 +127,22 @@ java ICMPPinger 127.0.0.1
 
 ## Sample Output
 
-### Test 1 — Localhost (127.0.0.1) — North America
+### Test 1 — Localhost (127.0.0.1)
 
 <img width="772" height="287" alt="Localhost ping output" src="https://github.com/user-attachments/assets/59cce8b3-c86c-48f7-8c3a-ecdd340dc951" />
 
-### Test 2 — North America (e.g. 8.8.8.8 — Google DNS, USA)
+### Test 2 — 
 
 <img width="782" height="302" alt="External host ping output" src="https://github.com/user-attachments/assets/4fef6525-4e36-475d-a266-5efde4ab60d1" />
 
-### Test 3 — Europe (e.g. 1.1.1.1 — Cloudflare, EU PoP)
+### Test 3 —
 
-<!-- Add screenshot here after running: sudo java ICMPPinger 1.1.1.1 -->
 
-### Test 4 — Asia (e.g. 210.2.4.8 — China Telecom)
+### Test 4 — 
 
-<!-- Add screenshot here after running: sudo java ICMPPinger 210.2.4.8 -->
 
-### Test 5 — Oceania / Africa (e.g. 203.0.178.191 — Australia)
+### Test 5 —
 
-<!-- Add screenshot here after running: sudo java ICMPPinger 203.0.178.191 -->
 
 ---
 
@@ -185,7 +182,6 @@ Example error output:
 ---
 
 ## References
-
 - Internet Control Message Protocol (RFC 792): https://datatracker.ietf.org/doc/html/rfc792
 - Computing the Internet Checksum (RFC 1071): https://datatracker.ietf.org/doc/html/rfc1071
 - Java `InetAddress` API Documentation: https://docs.oracle.com/javase/8/docs/api/java/net/InetAddress.html
