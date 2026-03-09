@@ -46,8 +46,6 @@ public class ICMPPinger {
     boolean useRaw = canUseRawSocket(addr);
 
     if (useRaw) {
-      // NOTE: Java DatagramSocket does NOT include the IP header in received
-      // buffers, so TTL is not accessible via this API. TTL shown as N/A.
       System.out.println("Mode: Raw ICMP Socket ... Packet Info Available (TTL = N/A)\n");
       runRawPing(addr, host, cnt);
     } else {
@@ -110,7 +108,7 @@ public class ICMPPinger {
               double rttMs = (recvTime - sendTime) / 1_000_000.0;
               rtts.add(rttMs);
               recv++;
-              // TTL shown as N/A — DatagramSocket does not expose incoming IP header
+              //TTL shown as N/A — DatagramSocket does not expose incoming IP header
               System.out.printf(
                 "Reply from %-16s    bytes=%-4d   seq=%-4d   TTL=N/A   time=%.2f ms%n",
                 addr.getHostAddress(),
@@ -133,14 +131,14 @@ public class ICMPPinger {
 
           } catch (SocketTimeoutException e) {
             System.out.printf("  Request timeout for seq=%-4d%n", seq);
-            handled = true; // timeout counts as handled — move to next seq
+            handled = true; //timeout counts as handled — move to next seq
           } catch (IOException e) {
             System.err.println("  Receive error (seq=" + seq + "): " + e.getMessage());
             handled = true;
           }
         }
 
-        // If we exhausted retries without a usable packet, report timeout
+        //If we exhausted retries without a usable packet, report timeout
         if (!handled) {
           System.out.printf("  Request timeout for seq=%-4d (too many foreign packets)%n", seq);
         }
@@ -198,11 +196,11 @@ public class ICMPPinger {
     int totLen  = HeadLen + PayloadSize;
     ByteBuffer buf = ByteBuffer.allocate(totLen);
 
-    buf.put((byte) EchoRequest);         // Type = 8
-    buf.put((byte) 0);                   // Code = 0
-    buf.putShort((short) 0);             // Checksum placeholder
-    buf.putShort((short)(pid & 0xFFFF)); // Identifier
-    buf.putShort((short)(seq & 0xFFFF)); // Sequence number
+    buf.put((byte) EchoRequest);         //Type = 8
+    buf.put((byte) 0);                   //Code = 0
+    buf.putShort((short) 0);             //Checksum placeholder
+    buf.putShort((short)(pid & 0xFFFF)); //Identifier
+    buf.putShort((short)(seq & 0xFFFF)); //Sequence number
 
     buf.putLong(System.currentTimeMillis()); // Timestamp (8 bytes)
     for (int i = HeadLen + 8; i < totLen; i++) {
@@ -231,10 +229,10 @@ public class ICMPPinger {
       len -= 2;
     }
     if (len == 1) {
-      sum += (data[i] & 0xFF) << 8;  // Odd leftover byte
+      sum += (data[i] & 0xFF) << 8;  //Odd leftover byte
     }
     while ((sum >> 16) != 0) {
-      sum = (sum & 0xFFFF) + (sum >> 16);  // Fold carry bits
+      sum = (sum & 0xFFFF) + (sum >> 16);  //Fold carry bits
     }
     return (~sum) & 0xFFFF;
   }
@@ -244,29 +242,26 @@ public class ICMPPinger {
 
   static class ICMPPacket {
     int type, code, id, seq, dataLen;
-    // NOTE: ttl field removed — Java DatagramSocket does not expose incoming
-    // IP header fields, so TTL cannot be read from received packets.
+    //NOTE: TTL field removed, Java DatagramSocket does not expose incomin IP header fields, so TTL can't be read from received packets.
   }
 
 
   //ICMP Reply Parser
   static ICMPPacket parseICMPReply(byte[] raw) {
-    if (raw == null || raw.length < 8) return null; // need at least ICMP header (8 bytes)
+    if (raw == null || raw.length < 8) return null; 
 
     ICMPPacket p = new ICMPPacket();
-    p.type    =  raw[0] & 0xFF;                              // ICMP Type  at offset 0
-    p.code    =  raw[1] & 0xFF;                              // ICMP Code  at offset 1
-    // raw[2..3] = checksum (skipped — not re-verified here)
-    p.id      = ((raw[4] & 0xFF) << 8) | (raw[5] & 0xFF);   // Identifier at offset 4
-    p.seq     = ((raw[6] & 0xFF) << 8) | (raw[7] & 0xFF);   // Sequence   at offset 6
-    p.dataLen =   raw.length - 8;                            // Payload length
+    p.type    =  raw[0] & 0xFF;                             
+    p.code    =  raw[1] & 0xFF;                              
+    p.id      = ((raw[4] & 0xFF) << 8) | (raw[5] & 0xFF);   
+    p.seq     = ((raw[6] & 0xFF) << 8) | (raw[7] & 0xFF);   
+    p.dataLen =   raw.length - 8;                            
 
     return p;
   }
 
 
   //Extra Credit
-
   static String describeDestUnreachable(int code) {
     switch (code) {
       case  0: return "Destination Network Unreachable";
