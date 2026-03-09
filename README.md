@@ -131,7 +131,7 @@ java ICMPPinger 127.0.0.1
 ---
 
 ### Commands Used
-<img width="767" height="130" alt="Commands overview" src="https://github.com/user-attachments/assets/913b759a-558e-49ae-b764-8dcd01f53a52" />
+<img width="767" height="130" alt="Commands overview" src="images/ContinentPinger.jpg" />
 
 ---
 
