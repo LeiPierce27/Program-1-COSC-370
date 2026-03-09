@@ -235,6 +235,64 @@ public class ICMPPinger {
     switch (code) {
       case 0: return "Destination Network Uncreachable";
       case 1: return "Destination Host Unreachable";
-      case 2:
+      case 2: return "Destination Protocol Unreachable";
+      case 3: return "Destination Port Unreachable";
+      case 4: return "Fragmentation Required, DF Flag set";
+      case 5: return "Source Route Failed";
+      case 6: return "Destination Network Unknown";
+      case 7: return "Destination Host Unknown";
+      case 8: return "Source Host Isolated";
+      case 9: return "Network Administratively Prohibited";
+      case 10: return "Host Administratively Prohibited";
+      case 11: return "Network Unreachable for TOS";
+      case 12: return "Host Unreachable for TOS";
+      case 13: return "Communication Administratively Prohibited";
+      default: reeturn "Destination Unreachable (code+" + code + ")";
+    }
+  }
+static void printSum(String H, int sent, int recv, List<Double> rtts) {
+  int lost = sent - recv;
+  double lossPkt = (sent > 0) ? (lost * 100.0 / sent) : 100.0;
 
-  
+  System.out.println("\n--- " + H + " ping stats ---");
+  System.out.printf(
+    "%d packet(s) transmitted, %d received, %d lost (%.0f%% packet lost)%n",
+    sent, recv, lost, lossPkt);
+
+  if (!rtts.isEmpty()) {
+    double min = rtts.stream().mapToDouble(Double::doubleValue).min().getAsDouble();
+    double max = rtts.stream().mapToDouble(Double::doubleValue).max().getAsDouble();
+    double avg = rtts.stream().mapToDouble(Double::doubleValue).average().getAsDouble();
+  } else {
+    System.out.println("No Replies Received... Unavailable RTT Stats.");
+  }
+}
+  static boolean canUseRawSocket(InetAddress addr) {
+    try (DatagramSocket s = new DatagramSocket()) {
+      byte[] probe = buildICMPEchoRequest(1, 0);
+      s.send(new DatagramPacket(probe, probe.length, addr, 0));
+      return true;
+    } catch (Exception e){
+      return false;
+    }
+  }
+static void sleepOneSec() {
+  try {
+    Thread.sleep(1000);
+  } catch (InterruptedException ignored) {
+    Thread.currentThread().interrupt();
+  }
+}
+
+  static void printUsage() {
+    System.out.println("Usage: ");
+    System.out.println(" sudo java ICMPPinger <host> [count]");
+    System.out.println("\n Arguments: ");
+    System.out.println(" Host IP Address or Hostname ( required ) ");
+    System.out.println(" Count Number of Pings to Send (optional, default=" + DfltCnt + ")");
+    System.out.println("\n Examples: ");
+    System.out.println(" sudo java ICMPPinger 127.0.0.1");
+    System.out.println(" sudo java ICMPPinger google.com 5");
+    System.out.println(" sudo java ICMPPinger 8.8.8.8 10");
+  }
+}
