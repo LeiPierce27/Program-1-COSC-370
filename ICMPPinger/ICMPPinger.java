@@ -50,7 +50,7 @@ public class ICMPPinger {
       runRawPing(addr, host, cnt);
     } else {
       System.out.println("Mode: Fallback (InetAddress.isReachable) -- TTL Not Available");
-      System.out.println("( Run With Sudo/Administrator For Raw ICMP Mode )\n");
+      System.out.println("( Java DatagramSocket Does Not Expose Incoming IP Header.  )\n");
       runFallbackPing(addr, host, cnt);
     }
   }
