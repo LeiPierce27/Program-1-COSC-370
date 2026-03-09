@@ -128,8 +128,6 @@ java ICMPPinger 127.0.0.1
 
 ---
 
-## Sample Output 1 (Windows)
-
 ---
 
 ### Commands Used
@@ -173,7 +171,47 @@ java ICMPPinger 127.0.0.1
 
 ---
 
-## Sample Output 2
+## Hiearchy Chart
+
+ICMPPinger
+│
+├── main()
+│   ├── printUsage()
+│   ├── InetAddress.getByName()
+│   ├── canUseRawSocket()
+│   │   ├── buildICMPEchoRequest()
+│   │   │   └── ComputeCheckSum()
+│   │   └── ICMPReply()
+│   ├── runRawPing()
+│   │   ├── buildICMPEchoRequest()
+│   │   │   └── ComputeCheckSum()
+│   │   ├── ICMPReply()
+│   │   ├── describeDestUnreach()
+│   │   ├── sleepOneSec()
+│   │   └── printSum()
+│   └── runFallbackPing()
+│       ├── sleepOneSec()
+│       └── printSum()
+│
+├── buildICMPEchoRequest()
+│   └── ComputeCheckSum()
+│
+├── ICMPReply()
+│
+├── describeDestUnreach()
+│
+├── printSum()
+│
+├── canUseRawSocket()
+│
+├── sleepOneSec()
+│
+└── printUsage()
+
+## Pseudocode
+
+The main program reads the target host and packet count from the command line arguments, resolves the hostname to an IP address, prints a startup message with a timestamp, then tests whether raw socket access is available. Raw Ping (runRawPing) manually builds and sends ICMP Echo Request packets and listens for replies. It gets the current process ID to tag each packet so it can identify its own replies. For each ping it records the send time, sends the packet, then waits up to 1 second for a reply and retries up to 5 times if unrelated packets arrive. Fallback Ping (runFallbackPing) is used when raw socket access is unavailable, which happens on Windows without administrator privileges. Instead of manually building ICMP packets, it uses Java's built-in isReachable() method which handles the ping internally through the operating system. Build ICMP Echo Request (buildICMPEchoRequest) constructs the raw bytes of an ICMP Echo Request packet from scratch. It allocates a 40 byte buffer and fills in the ICMP header fields and after building the packet it computes the checksum and inserts it into the correct position in the header. Compute Checksum (ComputeCheckSum) works by treating the packet as a sequence of 16-bit words and summing them all together. If there is a leftover byte at the end it adds it as the high byte of a 16-bit word. Parse ICMP Reply (ICMPReply) takes the raw bytes received from the socket and extracts the ICMP fields from them. Describe Destination Unreachable (describeDestUnreach) translates ICMP error code numbers into human readable messages. Print Summary (printSum) prints the final statistics after all pings have been sent and calculates how many packets were lost and the loss percentage. Check Raw Socket (canUseRawSocket) tests whether the program has permission to use raw ICMP sockets before committing to either mode by sending a probe ICMP packet to a host and waiting up to 500 milliseconds for a reply. Sleep One Second (sleepOneSec) is a simple helper method that pauses execution for 1 second between each ping. Print Usage (printUsage) is a helper method that prints instructions to the console when the user runs the program without providing the required host argument. 
+
 ## Extra Credit
 
 This implementation parses ICMP error response codes and displays human-readable error messages to the user.
