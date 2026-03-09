@@ -65,7 +65,12 @@ This will generate 'ICMPPinger.class' in the same directory.
 
 
 ### How to Run  / Test Program
-We used Eclipse IDE to run this 
+
+####Linux Terminal
+
+####Windows Terminal
+
+####Eclipse IDE 
  
 ## Sample Outputs
 ### Test 1
