@@ -8,10 +8,11 @@
 2. [Supported Platforms](#supported-platforms)
 3. [Prerequisites](#prerequisites)
 4. [How to Compile / How to Run](#how-to-compile--how-to-run)
-5. [Sample Output](#sample-output)
-6. [Extra Credit](#extra-credit)
-7. [Limitations](#limitations)
-8. [References](#references)
+5. [Sample Output 1](#sample-output-1)
+6. [Sample Output 2](#sample-output-2)
+7. [Extra Credit](#extra-credit)
+8. [Limitations](#limitations)
+9. [References](#references)
 
 ---
 
@@ -125,10 +126,7 @@ java ICMPPinger 127.0.0.1
 
 ---
 
-## Sample Output
-
-### Commands Used
-<img width="767" height="392" alt="Commands overview" src="https://github.com/user-attachments/assets/913b759a-558e-49ae-b764-8dcd01f53a52" />
+## Sample Output 1
 
 ---
 
@@ -168,6 +166,7 @@ java ICMPPinger 127.0.0.1
 
 ---
 
+## Sample Output 2
 ## Extra Credit
 
 This implementation parses ICMP error response codes and displays human-readable error messages to the user.
