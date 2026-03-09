@@ -65,20 +65,18 @@ This will generate 'ICMPPinger.class' in the same directory.
 
 
 ### How to Run  / Test Program
-
-Basic Usage:
-
-
+We used Eclipse IDE to run this 
+ 
+## Sample Outputs
 ### Test 1
 
+<img width="772" height="287" alt="image" src="https://github.com/user-attachments/assets/59cce8b3-c86c-48f7-8c3a-ecdd340dc951" />
 
 
 ### Test 2
 
+<img width="782" height="302" alt="image" src="https://github.com/user-attachments/assets/4fef6525-4e36-475d-a266-5efde4ab60d1" />
 
-
-
-## Sample Outputs
 
 
 ## Extra Credit
