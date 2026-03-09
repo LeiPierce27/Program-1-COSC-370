@@ -70,7 +70,7 @@ Open a terminal (or Command Prompt on Windows) and navigate to the project direc
 ### Step 1 — Navigate to the Source Folder
 
 ```bash
-cd ICMPPinger/src
+cd ICMPPinger
 ```
 
 ### Step 2 — Compile
