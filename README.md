@@ -24,6 +24,8 @@ This program implements a Ping Application in Java using ICMP (Internet Control 
 - Packet Loss Detection (timeout after 1 second)
 - Summary Statistics: **Minimum, Maximum, and Average RTT**
 
+  Our task is to develop our own Ping application. Our application will use ICMP but, in order
+  to keep it simple, will not exactly follow the official specification in RFC 1739. We will only need to write the client side of the program.
 ---
 
 ## Supported Platforms
