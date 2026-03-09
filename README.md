@@ -8,7 +8,7 @@
 2. [Supported Platforms](#supported-platforms)
 3. [Prerequisites](#prerequisites)
 4. [How to Compile / How to Run](#how-to-compile--how-to-run)
-5. [Sample Output 1(Windows](#sample-output-1(Windows))
+5. [Sample Output 1(Windows](#sample-output-1(Windows)))
 6. [Sample Output 2](#sample-output-2)
 7. [Extra Credit](#extra-credit)
 8. [Limitations](#limitations)
