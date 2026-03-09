@@ -6,7 +6,7 @@ import java.util.List;
 
 public class ICMPPinger {
 
-  // ICMP Constants
+  // ICMP Constants 
   static final int EchoReply   = 0;
   static final int DestUnreach = 3;
   static final int EchoRequest = 8;
@@ -16,11 +16,13 @@ public class ICMPPinger {
   static final int PayloadSize = 32;
   static final int DfltCnt     = 10;
 
+
+  static final int MAX_RETRIES = 5;
+
   public static void main(String[] args) throws Exception {
 
-    // Argument Parsing
     if (args.length < 1) {
-      printUsage();                         
+      printUsage();
       System.exit(1);
     }
 
@@ -29,10 +31,10 @@ public class ICMPPinger {
 
     InetAddress addr;
     try {
-      addr = InetAddress.getByName(host);   
-    } catch (UnknownHostException e) {     
+      addr = InetAddress.getByName(host);
+    } catch (UnknownHostException e) {
       System.err.println("Error: Cannot Resolve Host \"" + host + "\"");
-      System.err.println("  Check the address/hostname as well as your network connection.");
+      System.err.println("  Check the address/hostname and your network connection.");
       System.exit(1);
       return;
     }
@@ -40,12 +42,15 @@ public class ICMPPinger {
     System.out.println("PING " + host + " (" + addr.getHostAddress() + ") "
                        + PayloadSize + " bytes of data, " + cnt + " packets.\n");
 
+  
     boolean useRaw = canUseRawSocket(addr);
 
     if (useRaw) {
-      System.out.println("Mode: Raw ICMP Socket ... Packet Info Fully Available\n"); 
-      runRawPing(addr, host, cnt);          
-    } else {                                
+      // NOTE: Java DatagramSocket does NOT include the IP header in received
+      // buffers, so TTL is not accessible via this API. TTL shown as N/A.
+      System.out.println("Mode: Raw ICMP Socket ... Packet Info Available (TTL = N/A)\n");
+      runRawPing(addr, host, cnt);
+    } else {
       System.out.println("Mode: Fallback (InetAddress.isReachable) -- TTL Not Available");
       System.out.println("( Run With Sudo/Administrator For Raw ICMP Mode )\n");
       runFallbackPing(addr, host, cnt);
@@ -53,7 +58,9 @@ public class ICMPPinger {
   }
 
 
-  static void runRawPing(InetAddress addr, String host, int cnt) {  
+  //Raw ICMP Ping
+
+  static void runRawPing(InetAddress addr, String host, int cnt) {
     List<Double> rtts = new ArrayList<>();
     int sent = 0, recv = 0;
     int pid = (int)(ProcessHandle.current().pid() & 0xFFFF);
@@ -72,54 +79,70 @@ public class ICMPPinger {
           socket.send(sendPkt);
           sent++;
         } catch (IOException e) {
-          System.err.println("  Send error (seq=" + seq + "): " + e.getMessage());  
+          System.err.println("  Send error (seq=" + seq + "): " + e.getMessage());
           sleepOneSec();
           continue;
         }
 
-        byte[] recvBuf = new byte[1024];
-        DatagramPacket recvPkt = new DatagramPacket(recvBuf, recvBuf.length);
-        try {
-          socket.receive(recvPkt);
-          long recvTime = System.nanoTime();
+  
+        int retryCount = 0;
+        boolean handled = false;
 
-          byte[] raw = new byte[recvPkt.getLength()];  
-          System.arraycopy(recvPkt.getData(), 0, raw, 0, raw.length);  
+        while (!handled && retryCount < MAX_RETRIES) {
+          byte[] recvBuf = new byte[1024];
+          DatagramPacket recvPkt = new DatagramPacket(recvBuf, recvBuf.length);
+          try {
+            socket.receive(recvPkt);
+            long recvTime = System.nanoTime();
 
-          ICMPPacket icmp = parseICMPReply(raw);
-          if (icmp == null) {
-            seq--;
-            sent--;
-            continue;
+            byte[] raw = new byte[recvPkt.getLength()];
+            System.arraycopy(recvPkt.getData(), 0, raw, 0, raw.length);
+
+            ICMPPacket icmp = parseICMPReply(raw);
+            if (icmp == null) {
+              retryCount++;
+              continue;
+            }
+
+            handled = true;
+
+            if (icmp.type == EchoReply && icmp.id == pid) {
+              double rttMs = (recvTime - sendTime) / 1_000_000.0;
+              rtts.add(rttMs);
+              recv++;
+              // TTL shown as N/A — DatagramSocket does not expose incoming IP header
+              System.out.printf(
+                "Reply from %-16s    bytes=%-4d   seq=%-4d   TTL=N/A   time=%.2f ms%n",
+                addr.getHostAddress(),
+                icmp.dataLen, seq, rttMs);
+
+           
+            } else if (icmp.type == DestUnreach) {
+              System.out.printf("  seq=%-4d   ICMP Error  ->  %s%n",
+                                seq, describeDestUnreachable(icmp.code));
+
+            } else if (icmp.type == TimeExceed) {
+              System.out.printf(
+                "  seq=%-4d   ICMP Error  ->  Time Exceeded (TTL expired, code=%d)%n",
+                seq, icmp.code);
+
+            } else {
+              System.out.printf("  seq=%-4d   Unexpected ICMP type=%d code=%d%n",
+                                seq, icmp.type, icmp.code);
+            }
+
+          } catch (SocketTimeoutException e) {
+            System.out.printf("  Request timeout for seq=%-4d%n", seq);
+            handled = true; // timeout counts as handled — move to next seq
+          } catch (IOException e) {
+            System.err.println("  Receive error (seq=" + seq + "): " + e.getMessage());
+            handled = true;
           }
+        }
 
-          if (icmp.type == EchoReply && icmp.id == pid) {
-            double rttMs = (recvTime - sendTime) / 1_000_000.0;
-            rtts.add(rttMs);
-            recv++;
-            System.out.printf(
-              "Reply from %-16s    bytes=%-4d   seq=%-4d   TTL=%-4d   time=%.2f ms%n", 
-              addr.getHostAddress(),
-              icmp.dataLen, seq, icmp.ttl, rttMs);
-
-          } else if (icmp.type == DestUnreach) {
-            System.out.printf("  seq=%-4d   ICMP Error  ->  %s%n",
-                              seq, describeDestUnreachable(icmp.code));  
-
-          } else if (icmp.type == TimeExceed) {
-            System.out.printf(
-              "  seq=%-4d   ICMP Error  ->  Time Exceeded (TTL expired, code=%d)%n",
-              seq, icmp.code);
-
-          } else {
-            System.out.printf("  seq=%-4d  Unexpected ICMP type=%d code=%d%n",
-                              seq, icmp.type, icmp.code);
-          }
-
-        } catch (SocketTimeoutException e) {
-          System.out.printf("  Request timeout for seq=%-4d%n", seq);
-        } catch (IOException e) {
-          System.err.println("  Receive error (seq=" + seq + "): " + e.getMessage());
+        // If we exhausted retries without a usable packet, report timeout
+        if (!handled) {
+          System.out.printf("  Request timeout for seq=%-4d (too many foreign packets)%n", seq);
         }
 
         sleepOneSec();
@@ -129,9 +152,11 @@ public class ICMPPinger {
       System.err.println("Socket Error: " + e.getMessage());
     }
 
-    printSummary(host, sent, recv, rtts);  
+    printSummary(host, sent, recv, rtts);
   }
 
+
+  //Fallback Ping (InetAddress.isReachable)
 
   static void runFallbackPing(InetAddress addr, String host, int cnt) {
     List<Double> rtts = new ArrayList<>();
@@ -150,7 +175,7 @@ public class ICMPPinger {
 
       if (reachable) {
         double rttMs = (recvTime - sendTime) / 1_000_000.0;
-        rtts.add(rttMs);                 
+        rtts.add(rttMs);
         recv++;
         System.out.printf(
           "Reply from %-16s   bytes=%-4d  seq=%-4d   TTL=N/A   time=%.2f ms%n",
@@ -166,20 +191,22 @@ public class ICMPPinger {
   }
 
 
+  //ICMP Echo Request Builder
+
   static byte[] buildICMPEchoRequest(int pid, int seq) {
     int HeadLen = 8;
     int totLen  = HeadLen + PayloadSize;
     ByteBuffer buf = ByteBuffer.allocate(totLen);
 
-    buf.put((byte) EchoRequest);
-    buf.put((byte) 0);                             
-    buf.putShort((short) 0);
-    buf.putShort((short)(pid & 0xFFFF));
-    buf.putShort((short)(seq & 0xFFFF));
+    buf.put((byte) EchoRequest);         // Type = 8
+    buf.put((byte) 0);                   // Code = 0
+    buf.putShort((short) 0);             // Checksum placeholder
+    buf.putShort((short)(pid & 0xFFFF)); // Identifier
+    buf.putShort((short)(seq & 0xFFFF)); // Sequence number
 
-    buf.putLong(System.currentTimeMillis());      
+    buf.putLong(System.currentTimeMillis()); // Timestamp (8 bytes)
     for (int i = HeadLen + 8; i < totLen; i++) {
-      buf.put((byte)(i & 0xFF));                   
+      buf.put((byte)(i & 0xFF));         // Padding bytes
     }
 
     byte[] packet = buf.array();
@@ -190,6 +217,8 @@ public class ICMPPinger {
     return packet;
   }
 
+
+  //Internet Checksum 
 
   static int computeChecksum(byte[] data) {
     int sum = 0;
@@ -202,44 +231,45 @@ public class ICMPPinger {
       len -= 2;
     }
     if (len == 1) {
-      sum += (data[i] & 0xFF) << 8;
+      sum += (data[i] & 0xFF) << 8;  // Odd leftover byte
     }
     while ((sum >> 16) != 0) {
-      sum = (sum & 0xFFFF) + (sum >> 16);
+      sum = (sum & 0xFFFF) + (sum >> 16);  // Fold carry bits
     }
     return (~sum) & 0xFFFF;
   }
 
 
+  //ICMP Packet Container
+
   static class ICMPPacket {
-    int type, code, id, seq, ttl, dataLen;
+    int type, code, id, seq, dataLen;
+    // NOTE: ttl field removed — Java DatagramSocket does not expose incoming
+    // IP header fields, so TTL cannot be read from received packets.
   }
 
 
+  //ICMP Reply Parser
   static ICMPPacket parseICMPReply(byte[] raw) {
-    if (raw == null || raw.length < 28) return null;
-
-    int ihl      = (raw[0] & 0x0F) * 4;
-    int protocol =  raw[9] & 0xFF;             
-
-    if (protocol != 1) return null;
-    if (raw.length < ihl + 8) return null;
+    if (raw == null || raw.length < 8) return null; // need at least ICMP header (8 bytes)
 
     ICMPPacket p = new ICMPPacket();
-    p.ttl     =  raw[8]        & 0xFF;
-    p.type    =  raw[ihl]      & 0xFF;
-    p.code    =  raw[ihl + 1]  & 0xFF;
-    p.id      = ((raw[ihl + 4] & 0xFF) << 8) | (raw[ihl + 5] & 0xFF);
-    p.seq     = ((raw[ihl + 6] & 0xFF) << 8) | (raw[ihl + 7] & 0xFF);
-    p.dataLen =   raw.length - ihl - 8;
+    p.type    =  raw[0] & 0xFF;                              // ICMP Type  at offset 0
+    p.code    =  raw[1] & 0xFF;                              // ICMP Code  at offset 1
+    // raw[2..3] = checksum (skipped — not re-verified here)
+    p.id      = ((raw[4] & 0xFF) << 8) | (raw[5] & 0xFF);   // Identifier at offset 4
+    p.seq     = ((raw[6] & 0xFF) << 8) | (raw[7] & 0xFF);   // Sequence   at offset 6
+    p.dataLen =   raw.length - 8;                            // Payload length
 
     return p;
   }
 
 
+  //Extra Credit
+
   static String describeDestUnreachable(int code) {
     switch (code) {
-      case  0: return "Destination Network Unreachable";  
+      case  0: return "Destination Network Unreachable";
       case  1: return "Destination Host Unreachable";
       case  2: return "Destination Protocol Unreachable";
       case  3: return "Destination Port Unreachable";
@@ -253,12 +283,13 @@ public class ICMPPinger {
       case 11: return "Network Unreachable for TOS";
       case 12: return "Host Unreachable for TOS";
       case 13: return "Communication Administratively Prohibited";
-      default: return "Destination Unreachable (code=" + code + ")";  
+      default: return "Destination Unreachable (code=" + code + ")";
     }
   }
 
 
-  static void printSummary(String host, int sent, int recv, List<Double> rtts) {  
+
+  static void printSummary(String host, int sent, int recv, List<Double> rtts) {
     int    lost    = sent - recv;
     double lossPkt = (sent > 0) ? (lost * 100.0 / sent) : 100.0;
 
@@ -271,18 +302,42 @@ public class ICMPPinger {
       double min = rtts.stream().mapToDouble(Double::doubleValue).min().getAsDouble();
       double max = rtts.stream().mapToDouble(Double::doubleValue).max().getAsDouble();
       double avg = rtts.stream().mapToDouble(Double::doubleValue).average().getAsDouble();
-      System.out.printf("RTT  min=%.2f ms   avg=%.2f ms   max=%.2f ms%n", min, avg, max);  
+      System.out.printf("RTT  min=%.2f ms   avg=%.2f ms   max=%.2f ms%n", min, avg, max);
     } else {
       System.out.println("No Replies Received... Unavailable RTT Stats.");
     }
   }
 
 
+  //Helpers 
   static boolean canUseRawSocket(InetAddress addr) {
+    InetAddress loopback;
+    try {
+      loopback = InetAddress.getByName("127.0.0.1");
+    } catch (UnknownHostException e) {
+      return false;
+    }
+
     try (DatagramSocket s = new DatagramSocket()) {
-      byte[] probe = buildICMPEchoRequest(1, 0);
-      s.send(new DatagramPacket(probe, probe.length, addr, 0));
-      return true;
+      s.setSoTimeout(500);
+
+      int probePid = 0xCAFE;
+      byte[] probe = buildICMPEchoRequest(probePid, 0);
+      s.send(new DatagramPacket(probe, probe.length, loopback, 0));
+
+      byte[] buf = new byte[256];
+      DatagramPacket resp = new DatagramPacket(buf, buf.length);
+      s.receive(resp); 
+      //throws SocketTimeoutException if there is no ICMP reply arrives
+
+
+      
+      //Verify the reply is a real ICMP Echo Reply (type 0) from our probe
+      byte[] raw = new byte[resp.getLength()];
+      System.arraycopy(resp.getData(), 0, raw, 0, raw.length);
+      ICMPPacket icmp = parseICMPReply(raw);
+      return icmp != null && icmp.type == EchoReply && icmp.id == probePid;
+
     } catch (Exception e) {
       return false;
     }
@@ -300,7 +355,8 @@ public class ICMPPinger {
 
   static void printUsage() {
     System.out.println("Usage: ");
-    System.out.println("  sudo java ICMPPinger <host> [count]");
+    System.out.println("  Step 1 - Compile:  javac ICMPPinger.java");
+    System.out.println("  Step 2 - Run:      sudo java ICMPPinger <host> [count]");
     System.out.println("\nArguments: ");
     System.out.println("  host   IP Address or Hostname ( required )");
     System.out.println("  count  Number of Pings to Send (optional, default=" + DfltCnt + ")");
