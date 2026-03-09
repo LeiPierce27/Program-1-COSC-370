@@ -173,40 +173,8 @@ java ICMPPinger 127.0.0.1
 
 ## Hiearchy Chart
 
-ICMPPinger
-│
-├── main()
-│   ├── printUsage()
-│   ├── InetAddress.getByName()
-│   ├── canUseRawSocket()
-│   │   ├── buildICMPEchoRequest()
-│   │   │   └── ComputeCheckSum()
-│   │   └── ICMPReply()
-│   ├── runRawPing()
-│   │   ├── buildICMPEchoRequest()
-│   │   │   └── ComputeCheckSum()
-│   │   ├── ICMPReply()
-│   │   ├── describeDestUnreach()
-│   │   ├── sleepOneSec()
-│   │   └── printSum()
-│   └── runFallbackPing()
-│       ├── sleepOneSec()
-│       └── printSum()
-│
-├── buildICMPEchoRequest()
-│   └── ComputeCheckSum()
-│
-├── ICMPReply()
-│
-├── describeDestUnreach()
-│
-├── printSum()
-│
-├── canUseRawSocket()
-│
-├── sleepOneSec()
-│
-└── printUsage()
+<img width="541" height="755" alt="image" src="https://github.com/user-attachments/assets/5405412d-9ba6-4d8e-b6da-8f735665fc83" />
+
 
 ## Pseudocode
 
