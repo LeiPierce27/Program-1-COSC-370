@@ -187,12 +187,43 @@ This implementation parses ICMP error response codes and displays human-readable
 
 ## Limitations
 
-- Java's `DatagramSocket` does not expose the incoming IP header, so **TTL is not available** and is always shown as `N/A`. A native solution (JNI or a C helper) would be required to read TTL.
-- Raw socket access is blocked or restricted in some managed network environments (e.g., university firewalls). If pings to external hosts fail, try a different network.
-- On Windows, raw ICMP sockets behave differently due to OS-level restrictions and may not produce consistent results.
-- The program sends one ping per second and waits up to 1 second for a reply before marking a packet as lost.
+**Java API**
+- Java's `DatagramSocket` does not expose the incoming IP header, so **TTL is not available**
+  and is always shown as `N/A`. A native solution (JNI or a C helper) would be required to read TTL.
+- There is no native raw ICMP socket class in Java — the program relies on `DatagramSocket`,
+  which sends UDP rather than true raw ICMP.
+- `InetAddress.isReachable()` uses TCP echo on Windows instead of ICMP, so fallback mode
+  is not truly ICMP-based on Windows.
+
+**Platform**
+- On WSL (Windows Subsystem for Linux), raw socket access is blocked at the OS level
+  regardless of `sudo`, the program will always run in fallback mode on WSL.
+- On Windows, raw ICMP sockets behave differently due to OS-level restrictions and may
+  not produce consistent results even when running as Administrator.
+- Raw socket mode requires `sudo` on Linux and macOS — the program cannot run in raw
+  mode without elevated privileges.
+- Raw socket access is blocked or restricted in some managed network environments
+  (e.g., university firewalls). If pings to external hosts fail, try a different network.
+
+**Extra Credit**
+- ICMP error code parsing (Type 3, Type 11) only runs in Raw ICMP mode — error codes
+  will never be displayed in fallback mode.
+- Most modern routers and firewalls silently drop packets to unreachable addresses rather
+  than sending back a Type 3 Destination Unreachable response, making these errors
+  difficult to trigger in practice.
+
+**Protocol**
 - IPv4 only — IPv6 (ICMPv6) is not supported.
-- Requires **JDK 9 or higher** — will not compile on JDK 8 due to use of `ProcessHandle`.
+- Requires **JDK 9 or higher**, will not compile on JDK 8 due to use of `ProcessHandle`.
+- The program sends one ping per second and waits up to 1 second for a reply before
+  marking a packet as lost. Neither the interval nor the timeout is configurable via
+  command line.
+
+**Network**
+- Packet loss and timeout behavior depends on the network path and intermediate routers,
+  not the program itself.
+- Some hosts (e.g., `194.0.0.1` RIPE NCC, Europe) may not respond to ICMP requests,
+  resulting in 100% packet loss regardless of network connectivity.
 
 ---
 
